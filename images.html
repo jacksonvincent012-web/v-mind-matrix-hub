@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>V-Mind Matrix Hub</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-main: #060913;
+        --bg-sidebar: #0a0f24;
+        --bg-card: rgba(13, 21, 46, 0.45);
+        --border-neon: rgba(0, 242, 254, 0.25);
+        --neon-cyan: #00f2fe;
+        --neon-pink: #ff007f;
+        --neon-amber: #ffaa00;
+        --text-primary: #ffffff;
+        --text-secondary: #707e94;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: var(--bg-main);
+        color: var(--text-primary);
+        font-family: "Rajdhani", sans-serif;
+        display: flex;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* --- SIDEBAR FILTER REGISTRY --- */
+      aside {
+        width: 140px;
+        background-color: var(--bg-sidebar);
+        border-right: 1px solid var(--border-neon);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 30px 10px;
+        position: fixed;
+        height: 100vh;
+        z-index: 10;
+      }
+
+      .brand-logo {
+        font-family: "Orbitron", sans-serif;
+        font-size: 2rem;
+        color: var(--neon-cyan);
+        margin-bottom: 60px;
+        text-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
+        cursor: pointer;
+      }
+
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+      }
+
+      .filter-btn {
+        background: transparent;
+        border: 1px solid transparent;
+        color: var(--text-secondary);
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.85rem;
+        padding: 10px 0;
+        width: 85%;
+        margin: 0 auto;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+      }
+
+      .filter-btn:hover,
+      .filter-btn.active {
+        color: var(--neon-cyan);
+        border-color: var(--border-neon);
+        background: rgba(0, 242, 254, 0.05);
+        box-shadow: 0 0 8px rgba(0, 242, 254, 0.2);
+      }
+
+      .status-dot-anchor {
+        margin-top: auto;
+        width: 8px;
+        height: 8px;
+        background: var(--neon-cyan);
+        border-radius: 50%;
+        box-shadow: 0 0 10px var(--neon-cyan);
+      }
+
+      /* --- MAIN VIEWPORT LAYER --- */
+      main {
+        margin-left: 140px;
+        flex-grow: 1;
+        width: calc(100% - 140px);
+        padding: 40px;
+      }
+
+      /* --- VIEWPORT HEADER CONTROL --- */
+      .viewport-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 35px;
+      }
+
+      .meta-counter {
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.75rem;
+        letter-spacing: 2px;
+        color: var(--text-secondary);
+      }
+
+      .counter-highlight {
+        color: var(--neon-cyan);
+      }
+
+      .viewport-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin-top: 5px;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+
+      .action-btn {
+        background: rgba(0, 242, 254, 0.03);
+        border: 1px solid var(--border-neon);
+        color: var(--neon-cyan);
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.8rem;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .action-btn:hover {
+        background: rgba(0, 242, 254, 0.15);
+        box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+      }
+
+      .engine-badge {
+        background: rgba(13, 21, 46, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        color: var(--text-secondary);
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.75rem;
+        padding: 10px 18px;
+        border-radius: 4px;
+      }
+
+      .engine-highlight {
+        color: var(--neon-cyan);
+      }
+
+      /* --- GRID CONTAINER --- */
+      .grid-matrix {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 25px;
+      }
+
+      /* --- NODE IMAGE CARD --- */
+      .node-card {
+        background: var(--bg-card);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 12px;
+        cursor: pointer;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition:
+          transform 0.2s ease,
+          border-color 0.2s ease;
+      }
+
+      .node-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--border-neon);
+      }
+
+      .image-wrapper {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        background: #090e1a;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 12px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Dynamic Missing Asset Layout Fallback */
+      .image-wrapper.missing::before {
+        content: "ASSET MISSING";
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.75rem;
+        color: var(--neon-pink);
+        position: absolute;
+        top: 40%;
+      }
+
+      .image-wrapper.missing p {
+        font-size: 0.65rem;
+        color: var(--neon-cyan);
+        word-break: break-all;
+        padding: 10px;
+        text-align: center;
+        margin-top: 30px;
+      }
+
+      .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.8rem;
+      }
+
+      .node-id {
+        color: var(--text-secondary);
+        letter-spacing: 0.5px;
+      }
+
+      .tag-indicator {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+
+      .tag-gls {
+        background: var(--neon-cyan);
+        box-shadow: 0 0 8px var(--neon-cyan);
+      }
+      .tag-org {
+        background: var(--neon-pink);
+        box-shadow: 0 0 8px var(--neon-pink);
+      }
+      .tag-zen {
+        background: var(--neon-amber);
+        box-shadow: 0 0 8px var(--neon-amber);
+      }
+
+      /* --- DETAILED VIEW STATE --- */
+      .detail-view {
+        display: none;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      .return-link {
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+        margin-bottom: 30px;
+        display: inline-block;
+        letter-spacing: 1px;
+      }
+
+      .return-link:hover {
+        color: var(--neon-cyan);
+      }
+
+      .detail-layout {
+        display: flex;
+        gap: 40px;
+        align-items: flex-start;
+      }
+
+      .detail-visual-panel {
+        flex: 1.2;
+        background: var(--bg-card);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 16px;
+        position: relative;
+      }
+
+      .panel-badge {
+        position: absolute;
+        top: 28px;
+        left: 28px;
+        background: rgba(6, 9, 19, 0.8);
+        border: 1px solid var(--border-neon);
+        color: var(--neon-cyan);
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        border-radius: 3px;
+        letter-spacing: 1px;
+      }
+
+      .detail-img-frame {
+        width: 100%;
+        border-radius: 6px;
+        overflow: hidden;
+        background: #090e1a;
+        aspect-ratio: 4/3;
+      }
+
+      .detail-img-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .detail-desc-box {
+        background: rgba(6, 9, 19, 0.5);
+        border-radius: 4px;
+        padding: 15px;
+        margin-top: 15px;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: var(--text-primary);
+      }
+
+      .detail-metrics-panel {
+        flex: 0.8;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        width: 100%;
+      }
+
+      .metric-card {
+        background: var(--bg-card);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 8px;
+        padding: 24px;
+      }
+
+      .metric-title {
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        letter-spacing: 1.5px;
+        margin-bottom: 12px;
+      }
+
+      .metric-value {
+        font-family: "Orbitron", sans-serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 25px;
+      }
+
+      .progress-track {
+        width: 100%;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        height: 100%;
+        width: 0%;
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .bar-cyan {
+        background: linear-gradient(90deg, #0072ff, var(--neon-cyan));
+        box-shadow: 0 0 8px var(--neon-cyan);
+      }
+      .bar-pink {
+        background: linear-gradient(90deg, #7f00ff, var(--neon-pink));
+        box-shadow: 0 0 8px var(--neon-pink);
+      }
+
+      /* --- MODAL DIALOG MATRIX --- */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(4, 6, 14, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-content {
+        background: #0b1126;
+        border: 1px solid rgba(0, 242, 254, 0.15);
+        border-radius: 12px;
+        width: 100%;
+        max-width: 460px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "Orbitron", sans-serif;
+        margin-bottom: 25px;
+      }
+
+      .modal-title {
+        font-size: 1.1rem;
+        color: var(--neon-cyan);
+        letter-spacing: 1px;
+      }
+
+      .modal-close {
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        transition: color 0.2s ease;
+      }
+
+      .modal-close:hover {
+        color: var(--neon-pink);
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.7rem;
+        color: var(--text-secondary);
+        letter-spacing: 1px;
+      }
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        background: rgba(6, 9, 19, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 4px;
+        padding: 12px;
+        color: var(--text-primary);
+        font-family: "Rajdhani", sans-serif;
+        font-size: 0.95rem;
+        outline: none;
+        width: 100%;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        border-color: var(--border-neon);
+      }
+
+      .form-group textarea {
+        resize: none;
+        height: 80px;
+      }
+
+      .submit-btn {
+        width: 100%;
+        background: rgba(0, 242, 254, 0.04);
+        border: 1px solid var(--border-neon);
+        color: var(--neon-cyan);
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.9rem;
+        padding: 14px;
+        border-radius: 4px;
+        cursor: pointer;
+        letter-spacing: 1px;
+        transition: all 0.2s ease;
+      }
+
+      .submit-btn:hover {
+        background: rgba(0, 242, 254, 0.12);
+        box-shadow: 0 0 15px rgba(0, 242, 254, 0.25);
+      }
+    </style>
+  </head>
+  <body>
+    <aside>
+      <div class="brand-logo" onclick="resetToDashboard()">V</div>
+      <div class="filter-group">
+        <button class="filter-btn active" onclick="applyFilter('ALL', this)">
+          ALL
+        </button>
+        <button class="filter-btn" onclick="applyFilter('GLS', this)">
+          GLS
+        </button>
+        <button class="filter-btn" onclick="applyFilter('ORG', this)">
+          ORG
+        </button>
+        <button class="filter-btn" onclick="applyFilter('ZEN', this)">
+          ZEN
+        </button>
+      </div>
+      <div class="status-dot-anchor"></div>
+    </aside>
+
+    <main>
+      <div id="grid-view-state">
+        <div class="viewport-header">
+          <div>
+            <div class="meta-counter">
+              INDEXED_ASSETS //
+              <span id="item-count" class="counter-highlight">0</span> ITEMS
+              DISPLAYED
+            </div>
+            <h1 class="viewport-title">V-Mind Matrix Gallery</h1>
+          </div>
+          <div class="header-actions">
+            <button class="action-btn" onclick="toggleModal(true)">
+              + INITIALIZE_NEW_ASSET
+            </button>
+            <div class="engine-badge">
+              RENDER_ENGINE: <span class="engine-highlight">GRID_MATRIX</span>
+            </div>
+          </div>
+        </div>
+        <div class="grid-matrix" id="matrix-container"></div>
+      </div>
+
+      <div id="detail-view-state" class="detail-view">
+        <div class="return-link" onclick="resetToDashboard()">
+          &lt;-- RETURN_TO_MATRIX_GRID
+        </div>
+        <div class="viewport-header" style="margin-bottom: 25px">
+          <div>
+            <div class="meta-counter" id="detail-meta-id">
+              SYS_STATE // 01_MTN_GLS_NODE
+            </div>
+            <h1 class="viewport-title" id="detail-title">Crystal Mountain</h1>
+          </div>
+          <div class="header-actions">
+            <div class="engine-badge" style="font-size: 0.7rem">
+              LATENCY:
+              <span class="engine-highlight" style="color: #00ff88"
+                >0.02ms</span
+              >
+            </div>
+            <div class="engine-badge" style="font-size: 0.7rem">
+              STATUS:
+              <span class="engine-highlight" style="color: #00ff88"
+                >ONLINE</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-layout">
+          <div class="detail-visual-panel">
+            <div class="panel-badge">ENVIRONMENT_ENGAGED</div>
+            <div class="detail-img-frame">
+              <img id="detail-img" src="" alt="Node Focal" />
+            </div>
+            <div class="detail-desc-box" id="detail-desc"></div>
+          </div>
+
+          <div class="detail-metrics-panel">
+            <div class="metric-card">
+              <div class="metric-title">DENSITY INDEX</div>
+              <div class="metric-value" id="metric-m1-val">0.0%</div>
+              <div class="progress-track">
+                <div id="metric-bar1" class="progress-bar bar-cyan"></div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-title">REFRACTION MATRIX</div>
+              <div class="metric-value" id="metric-m2-val">0.00λ</div>
+              <div class="progress-track">
+                <div id="metric-bar2" class="progress-bar bar-pink"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="modal-overlay" id="asset-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">MANIFEST_NEW_ASSET</div>
+          <div class="modal-close" onclick="toggleModal(false)">
+            [ CLOSE_X ]
+          </div>
+        </div>
+        <form id="node-form" onsubmit="handleFormSubmit(event)">
+          <div class="form-group">
+            <label>ASSET SYSTEM NAME</label>
+            <input
+              type="text"
+              id="form-name"
+              placeholder="e.g. Neon Horizon"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>NETWORK FILTER REGISTRY (TAG)</label>
+            <select id="form-tag">
+              <option value="GLS">GLS (Glassmorphism Core)</option>
+              <option value="ORG">ORG (Organic Fracture)</option>
+              <option value="ZEN">ZEN (Zenith Lattice)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>VISUAL PATH LOCATION (URL / FILENAME)</label>
+            <input
+              type="text"
+              id="form-src"
+              placeholder="e.g. boat.png or unsplash URL"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>TELEMETRY DESCRIPTIVE SUMMARY</label>
+            <textarea
+              id="form-desc"
+              placeholder="Describe the structural data specifications..."
+              required
+            ></textarea>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 10px">
+            <button
+              type="button"
+              class="submit-btn"
+              style="
+                background: rgba(255, 0, 127, 0.02);
+                border-color: rgba(255, 0, 127, 0.3);
+                color: var(--neon-pink);
+              "
+              onclick="toggleModal(false)"
+            >
+              ABORT_INJECTION
+            </button>
+            <button type="submit" class="submit-btn">INJECT_NODE</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      let localClusterCache = [];
+      let activeFilter = "ALL";
+      let currentViewingNodeId = null;
+
+      async function fetchClusterState() {
+        try {
+          const response = await fetch("/api/nodes");
+          localClusterCache = await response.json();
+          renderMatrixDashboard();
+          if (currentViewingNodeId) {
+            updateDetailTelemetryFields();
+          }
+        } catch (error) {
+          console.error("Cluster telemetry fetch dropped:", error);
+        }
+      }
+
+      function renderMatrixDashboard() {
+        const container = document.getElementById("matrix-container");
+        const itemsToRender =
+          activeFilter === "ALL" ? localClusterCache : (
+            localClusterCache.filter((node) => node.tag === activeFilter)
+          );
+
+        document.getElementById("item-count").innerText = itemsToRender.length;
+        container.innerHTML = "";
+
+        itemsToRender.forEach((node) => {
+          const card = document.createElement("div");
+          card.className = "node-card";
+          card.onclick = () => launchNodeDetailView(node.id);
+
+          const wrapper = document.createElement("div");
+          wrapper.className = "image-wrapper";
+
+          if (
+            !node.src ||
+            node.src.trim() === "" ||
+            node.src.includes("[placeholder]")
+          ) {
+            wrapper.classList.add("missing");
+            const brokenLabel = document.createElement("p");
+            brokenLabel.innerText = node.src || "NULL_PATH";
+            wrapper.appendChild(brokenLabel);
+          } else {
+            const img = document.createElement("img");
+            img.src = node.src;
+            img.alt = node.name;
+            wrapper.appendChild(img);
+          }
+
+          const footer = document.createElement("div");
+          footer.className = "card-footer";
+
+          const idLabel = document.createElement("span");
+          idLabel.className = "node-id";
+          idLabel.innerText = node.id;
+
+          const dot = document.createElement("div");
+          dot.className = `tag-indicator tag-${node.tag.toLowerCase()}`;
+
+          footer.appendChild(idLabel);
+          footer.appendChild(dot);
+          card.appendChild(wrapper);
+          card.appendChild(footer);
+          container.appendChild(card);
+        });
+      }
+
+      function applyFilter(tag, element) {
+        activeFilter = tag;
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((btn) => btn.classList.remove("active"));
+        element.classList.add("active");
+        resetToDashboard();
+      }
+
+      function launchNodeDetailView(id) {
+        currentViewingNodeId = id;
+        document.getElementById("grid-view-state").style.display = "none";
+        document.getElementById("detail-view-state").style.display = "block";
+        updateDetailTelemetryFields();
+      }
+
+      function updateDetailTelemetryFields() {
+        const node = localClusterCache.find(
+          (n) => n.id === currentViewingNodeId,
+        );
+        if (!node) return resetToDashboard();
+
+        document.getElementById("detail-title").innerText = node.name;
+        document.getElementById("detail-meta-id").innerText =
+          `SYS_STATE // ${node.id}_${node.tag}_NODE`;
+        document.getElementById("detail-desc").innerText = node.desc;
+
+        const imgElement = document.getElementById("detail-img");
+        imgElement.src = node.src;
+
+        // Live-bind metrics
+        document.getElementById("metric-m1-val").innerText = node.m1;
+        document.getElementById("metric-m2-val").innerText = node.m2;
+        document.getElementById("metric-bar1").style.width = `${node.bar1}%`;
+        document.getElementById("metric-bar2").style.width = `${node.bar2}%`;
+      }
+
+      function resetToDashboard() {
+        currentViewingNodeId = null;
+        document.getElementById("detail-view-state").style.display = "none";
+        document.getElementById("grid-view-state").style.display = "block";
+        renderMatrixDashboard();
+      }
+
+      function toggleModal(open) {
+        document.getElementById("asset-modal").style.display =
+          open ? "flex" : "none";
+      }
+
+      async function handleFormSubmit(e) {
+        e.preventDefault();
+        const payload = {
+          name: document.getElementById("form-name").value,
+          tag: document.getElementById("form-tag").value,
+          src: document.getElementById("form-src").value,
+          desc: document.getElementById("form-desc").value,
+        };
+
+        try {
+          const response = await fetch("/api/nodes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (response.ok) {
+            e.target.reset();
+            toggleModal(false);
+            fetchClusterState();
+          }
+        } catch (err) {
+          console.error("Injection failed:", err);
+        }
+      }
+
+      // Initialize Core Heartbeat Loop
+      fetchClusterState();
+      setInterval(fetchClusterState, 3000);
+    </script>
+  </body>
+</html>

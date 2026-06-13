@@ -1,6 +1,8 @@
 # V-Mind Matrix Hub
 
 A sleek, high-tech full-stack asset management interface built with Node.js, Express, and vanilla JavaScript. This gallery dynamically renders system asset modules using a custom API grid structure.
+<img width="1920" height="1032" alt="Screenshot 2026-06-06 123346" src="https://github.com/user-attachments/assets/659e8e64-d6a8-4d0d-9760-f70eb18a913d" />
+
 
 ## 🚀 Features
 * **Dynamic Grid Layout:** Built using responsive CSS Grid configurations.
